@@ -22,7 +22,6 @@ from models import TournamentHelper as th, EventHelper as eh, DrawHelper as dh
 
 class TournamentScraper(object):
     def __init__(self, tournament_site_id):
-        # self.driver = webdriver.PhantomJS(executable_path='C:\\Users\\Pierre\\PycharmProjects\\WebScraping\\
         # phantomjs-2.1.1-windows\\phantomjs-2.1.1-windows\\bin\\phantomjs')
         # TODO check that file exists (to be secured):
         # self.driver = webdriver.PhantomJS(executable_path=os.getcwd() + '\\phantomjs')

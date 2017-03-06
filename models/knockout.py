@@ -117,7 +117,7 @@ class Helper(object):
                         entryPosition.set_entry(*entries[:2])  # TODO Ensure that players contains 1 or 2 players MAX!
                         # knockout.add_entryPosition(entryPosition)
                         team_index += 1
-                    elif 'score' in td.span.get('class', []):
+                    elif td.span and 'score' in td.span.get('class', []):
                         coords_previous_round = Helper._get_coord_previous(dMapCoords.get((x, y - 1)))
                         match = models.Match(knockout.get_entryPosition(*coords_previous_round[0]),
                                       knockout.get_entryPosition(*coords_previous_round[1]))
