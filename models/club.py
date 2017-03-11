@@ -8,6 +8,9 @@ class Club(object):
     #         self.players.add(player)
     #         player.add_club(self)
 
+    def __str__(self):
+        return '{}'.format(self.name)
+
     def __eq__(self, other):
         return self.name == other.name
 

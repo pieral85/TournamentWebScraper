@@ -1,10 +1,10 @@
 class Entry(object):
-    def __init__(self, player, club, draw, entry_site_drc_id):
+    def __init__(self, player, club, draw, entry_site_drc_id, tournament_player_site_id):
         self.draw = None
         self.player = player
         self.club = club
-        self.tournament_player_site_id = None
         self.entry_site_drc_id = entry_site_drc_id
+        self.tournament_player_site_id = tournament_player_site_id
         self.entryPositions = set()
         self.set_draw(draw)  # self.draw = draw
         # self.tournaments = {}
@@ -21,14 +21,19 @@ class Entry(object):
             self.draw.add_entry(self)
 
     # noinspection PyPep8Naming
-    def add_entryPosition(self, entryPosition):
+    def add_entryPosition(self, entryPosition, is_co_entry=False):
         if entryPosition not in self.entryPositions:
             self.entryPositions.add(entryPosition)
-            entryPosition.set_entry(self)
+            entryPosition.set_entry(self if not is_co_entry else None,
+                                    self if is_co_entry else None)
 
     def print_(self, until_class='Entry', offset=0):
-        print(' '*offset + str(self))
-        # TODO
+        print('{0}Entry "{1}"'.format(' ' * offset, str(self)))
+        if until_class != self.__class__.__name__:
+            # print('{}Matchs:"'.format(' ' * (offset + 1)))
+            for entryPosition in self.entryPositions:
+                if entryPosition:
+                    entryPosition.print_(until_class, offset+1)
         # if until_class != self.__class__.__name__:
         #     for entry in self.entries:
         #         pass

@@ -56,7 +56,7 @@ class Helper(object):
         # draw = Draw
         x_club = None
 
-        table = Scraper.get_BeautifulSoup(models.Draw.__name__, 'single', {'draw': knockout.site_id})\
+        table = Scraper.get_BeautifulSoup(models.Draw.__name__, 'single', draw=knockout.site_id)\
             .find('div', class_='draw').table
         # table = self._get_bs('draw', {'draw', draw_id}).find('div', class_='draw').table
         # equivalent to: table = self._get_bs('draw', {'draw', draw_id}).find('div', class_='draw').find('table')
@@ -118,15 +118,27 @@ class Helper(object):
                         # knockout.add_entryPosition(entryPosition)
                         team_index += 1
                     elif td.span and 'score' in td.span.get('class', []):
-                        coords_previous_round = Helper._get_coord_previous(dMapCoords.get((x, y - 1)))
+                        coords_previous_round = Helper._get_coord_previous(*dMapCoords.get((x, y - 1)))
                         match = models.Match(knockout.get_entryPosition(*coords_previous_round[0]),
-                                      knockout.get_entryPosition(*coords_previous_round[1]))
+                                             knockout.get_entryPosition(*coords_previous_round[1]))
                         # match.entryPosition1 = knockout.get_entryPosition(*coords_previous_round[0])
                         # match.entryPosition2 = knockout.get_entryPosition(*coords_previous_round[1])
                         # noinspection PyPep8Naming
-                        entryPosition_winner = knockout.get_entryPosition(dMapCoords.get((x, y - 1)))
-                        match.add_result(*[score.text for score in td.find('span', class_='score').find_all('span')],
-                                         swap_result=entryPosition_winner == match.entryPosition2)
+                        entryPosition_winner = knockout.get_entryPosition(*dMapCoords.get((x, y - 1)))
+                        span = td.find('span', class_='score')
+                        if not span:
+                            pass
+                        elif len(span.find_all('span')) >= 2:
+                            match.add_result(*[score.text for score in span.find_all('span')],
+                                             swap_result=entryPosition_winner == match.entryPosition2)
+                        elif span.text.upper() == 'WALKOVER':
+                            match.add_result('21-0', '21-0',
+                                             swap_result=entryPosition_winner == match.entryPosition2)
+                        else:
+                            raise Exception('Unknown match result for following html tag: "{}"'.format(td.text))
+
+                            # match.add_result(*[score.text for score in td.find('span', class_='score').find_all('span')],
+                            #              swap_result=entryPosition_winner == match.entryPosition2)
                         # Helper.matchs.add(match)
         return knockout
 

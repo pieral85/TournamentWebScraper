@@ -14,17 +14,18 @@ class Tournament(object):
 
     # @classmethod
     def print_(self, until_class='Tournament'):
-        print(str(self))
+        print('Tournament "{}"'.format(str(self)))
         # if not isinstance(self, until_class):
         if until_class != self.__class__.__name__:
             for event in self.events:
-                event.print_(until_class, 1)
+                if event:
+                    event.print_(until_class, 1)
 
     def __str__(self):
         return '{0} ({1})'.format(self.name, self.site_sid)
 
     def __eq__(self, other):
-        return self.site_sid == other.site_id
+        return self.site_sid == other.site_sid
 
     def __hash__(self):
         return hash(self.site_sid)

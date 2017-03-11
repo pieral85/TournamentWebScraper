@@ -59,17 +59,21 @@ class Draw(object):
                     return entryPosition
 
     def print_(self, until_class='Draw', offset=0):
-        print(' '*offset + str(self))
+        print('{0}Draw "{1}"'.format(' ' * offset, str(self)))
         if until_class != self.__class__.__name__:
+            # print('{}Entries:"'.format(' ' * (offset + 1)))
             for entry in self.entries:
-                entry.print_(until_class, offset+1)
+                if entry:
+                    entry.print_(until_class, offset+1)
+            # print('{}Matchs:"'.format(' ' * (offset + 1)))
+            # for match in self.
 
     def __str__(self):
         return '{0} ({1}: round {2}, index {3}) (#{4})'\
             .format(self.name, self.type_, self.round, self.index, self.site_id)
 
     def __eq__(self, other):
-        if not self.event or self.site_id:
+        if not self.event or not self.site_id:
             raise Exception('Either event or site_id has not been define in draw instance {}.'.format(str(self)))
             # TODO Replicate this securisation in all equivalent methods (within a generic function?)
         return self.event == other.event and self.site_id == other.site_id
@@ -149,7 +153,7 @@ class Helper(object):
     @staticmethod
     def scrape(event):
         x_draw, x_type, x_qualify = [None]*3
-        table = Scraper.get_BeautifulSoup(event.__class__.__name__, 'single', {'event': event.site_sid})\
+        table = Scraper.get_BeautifulSoup(event.__class__.__name__, 'single', event=event.site_sid)\
             .find('div', id='content').find('table', class_='ruler')
         for x, td in enumerate(table.thead.tr.find_all('td')):
             header = td.text.upper().strip()
@@ -323,13 +327,14 @@ class Helper(object):
         for club_name, tournament_player_site_id in zip(team_clubNames, tournament_player_site_ids):
             # add club in list of clubs
 
-            player = models.PlayerHelper.add_player(models.Player(tournament_player_site_id))
+            player = models.PlayerHelper.add_player(draw.event.tournament, tournament_player_site_id)  # TODO: /!\ The ID given to Player constructor should not be related the tournament!!!
+            # player = models.PlayerHelper.add_player(models.Player(tournament_player_site_id))
             # old way: player = self.get_player(Player(int(player_tag_a['href'].split('entry=')[1])))
             club = models.ClubHelper.add_club(models.Club(club_name))
             # old way: club = self.get_club(Club(club_name))
             # club.add_player(player)
             # EntryHelper.add_entry(EntryHelper.add_entry(Entry(player, club, draw, entry_site_drc_id)))
-            entry = models.Entry(player, club, draw, entry_site_drc_id)
+            entry = models.Entry(player, club, draw, entry_site_drc_id, tournament_player_site_id)
             Helper._entries.add(models.EntryHelper.add_entry(entry))
             entries_.append(models.EntryHelper.add_entry(entry))
             # Helper.players.add(player)

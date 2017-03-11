@@ -1,4 +1,5 @@
 class Match(object):
+    # noinspection PyPep8Naming
     def __init__(self, entryPosition1, entryPosition2):
         self.entryPosition1 = None
         self.entryPosition2 = None
@@ -17,6 +18,8 @@ class Match(object):
             self.entryPosition2.set_match(self, 2)
 
     def add_result(self, result_set1, result_set2, result_set3=None, swap_result=False):
+        # if result_set1.upper() == 'WALKOVER':
+        #     result_set1, result_set2 = '21-0', '21-0'
         self.result_set1 = Match._convert_result(result_set1, swap_result)
         self.result_set2 = Match._convert_result(result_set2, swap_result)
         self.result_set3 = Match._convert_result(result_set3, swap_result)
@@ -63,17 +66,33 @@ class Match(object):
 
     @staticmethod
     def _convert_result(result, swap_result):
-        if isinstance(result, str):
+        # converted_result = None
+        if not result:
+            return None
+        elif isinstance(result, str):
             # noinspection PyUnusedLocal
-            converted_result = result.split('-')
-        elif not isinstance(result, (tuple, list, set)):
-            raise Exception('Variable "result" (={0}) must be either a list, tuple or string (type found:{1})'
+            result = result.split('-')
+        elif not isinstance(result, (tuple, list)):
+            raise Exception('Variable "result" (={0}) must be either a list or a tuple (type found:{1})'
                             .format(result, type(result)))
-        converted_result = tuple(result) if not swap_result else tuple(result[::-1])
+        result = tuple(result) if not swap_result else tuple(result[::-1])
 
-        if len(converted_result) != 2:
+        if len(result) != 2:
             raise Exception('Wrong match result type: {}'.format(result))
-        return converted_result
+        return result
+
+    def print_result(self):
+        return ' '.join([str(s[0]) + '-' + str(s[1])
+                         for s in (self.result_set1, self.result_set2, self.result_set3) if s])
+
+    def print_(self, until_class='Match', offset=0):
+        print('{0}Match "{1}"'.format(' ' * offset, str(self)))
+        # if not isinstance(self, until_class):
+        if until_class != self.__class__.__name__:
+            pass
+
+    def __str__(self):
+        return '{0} vs. {1}: {2}'.format(str(self.entryPosition1), str(self.entryPosition2), self.print_result())
 
     def __eq__(self, other):
         return self.entryPosition1 == other.entryPosition1 and \

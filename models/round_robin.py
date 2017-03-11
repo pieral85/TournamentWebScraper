@@ -23,7 +23,7 @@ class Helper(object):
     @staticmethod
     def scrape(roundRobin):
         x_firstTeam, x_club = None, None
-        table = Scraper.get_BeautifulSoup(models.Draw.__name__, 'single', {'draw': roundRobin.site}).find(id='poule').table
+        table = Scraper.get_BeautifulSoup(models.Draw.__name__, 'single', draw=roundRobin.site).find(id='poule').table
         # TODO Try to merge with code in knockout
         for x, td in enumerate(table.thead.tr.find_all('td')):
             if td.text.upper().strip() == 'CLUB':

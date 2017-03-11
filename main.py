@@ -15,9 +15,12 @@
 # # from models.entry_position import EntryPosition
 # # from models.club import Club
 from scraper import Scraper
-from models import TournamentHelper as th, EventHelper as eh, DrawHelper as dh
+
+from models import TournamentHelper, PlayerHelper, EventHelper, DrawHelper
+from config import DB_FILE_PATH
 # link = 'https://lfbb.tournamentsoftware.com/sport/tournament.aspx?id=D5D2E3E4-1C1C-4CD1-9661-1C6D8FDD3731'
 # url_root = 'https://lfbb.tournamentsoftware.com/sport/'
+
 
 
 class TournamentScraper(object):
@@ -27,7 +30,7 @@ class TournamentScraper(object):
         # self.driver = webdriver.PhantomJS(executable_path=os.getcwd() + '\\phantomjs')
         # self.driver.set_window_size(100, 500)  # TODO Useful???
         self.tournament_site_id = tournament_site_id
-        Scraper.site_url_tournament_sid = tournament_site_id
+# Scraper.site_url_tournament_sid = tournament_site_id
         # self.tournament = Tournament(tournament_site_id)
 
         self.tournaments = set()
@@ -35,7 +38,6 @@ class TournamentScraper(object):
         self.players = set()
         # self.draws = set()
         # self.clubs = set()
-
     # # @staticmethod
     # @classmethod
     # def is_player(cls, tag):
@@ -54,13 +56,13 @@ class TournamentScraper(object):
         # self.players = self.scrape_players()
         # self.draws = self.scrape_draws()
 
-        self.tournaments = th.scrape(self.tournament_site_id)
+        self.tournaments = TournamentHelper.scrape(self.tournament_site_id)
 
         for tournament in self.tournaments:
-# self.players = ph.scrape(tournament)
+            # PlayerHelper.scrape(tournament)
             # TODO: Here, should link player with tournament
-            for event in eh.scrape(tournament):
-                for draw in dh.scrape(event):
+            for event in EventHelper.scrape(tournament):
+                for draw in DrawHelper.scrape(event):
                     pass
 
     def print_all(self):
@@ -181,7 +183,9 @@ class TournamentScraper(object):
 if __name__ == '__main__':
     # config.init()
     # tournamentScraper = TournamentScraper('D5D2E3E4-1C1C-4CD1-9661-1C6D8FDD3731')  # Bertrix 2017
+        # Club id: http://lfbb.tournamentsoftware.com/default.aspx?id=2&cb=55127840-BDE8-4FF4-94C9-E5393A176E16
     tournamentScraper = TournamentScraper('9E9A83F7-77CE-4B60-B0BA-F5041F45DE19')  # Namur 2016
+        # Club id: http://lfbb.tournamentsoftware.com/default.aspx?id=2&cb=C43F3CA1-811C-44EE-B218-4C6AE8A2173D
     # TODO Try with a list/tupl/set of site_ids
     tournamentScraper.scrape()
     tournamentScraper.print_all()

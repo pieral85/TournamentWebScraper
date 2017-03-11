@@ -20,10 +20,11 @@ class Event(object):
             draw.set_event(self)
 
     def print_(self, until_class='Event', offset=0):
-        print(' '*offset + str(self))
+        print('{0}Event "{1}"'.format(' '*offset, str(self)))
         if until_class != self.__class__.__name__:
-            for d in self.draws:
-                d.print_(until_class, offset+1)
+            for draw in self.draws:
+                if draw:
+                    draw.print_(until_class, offset+1)
 
     def __str__(self):
         return '{0} ({1})'.format(self.name, self.site_sid)

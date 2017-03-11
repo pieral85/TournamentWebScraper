@@ -23,24 +23,11 @@
 
 # ====================================
 
-def getRoundCoord(coord, offset, recursive=False):
-    if offset > 0:
-        return (coord[0] + 1, coord[1] // 2)
-    else:
-        if coord[0] <= 0:
-            return None
-        return[(coord[0] - 1, coord[1] * 2),
-               (coord[0] - 1, coord[1] * 2 + 1)]
+import os
 
-coord = (1, 3)
-next_coord = (coord[0]+1, coord[1]//2)
-if coord[0] > 0:
-    prev_coord = [(coord[0]-1, coord[1]*2),
-                  (coord[0]-1, coord[1]*2+1)]
-else:
-    prev_coord = None
+# print(os.path.abspath(__file__))
+# print(os.path.dirname(os.path.abspath(__file__)))
+# print(os.getcwd())
+print(os.path.join(os.getcwd(), "toto", "tutu"))
+os.makedirs(os.path.join(os.getcwd(), "data", "tournament_123", 'toto.txt'), exist_ok=True)
 
-print('=== ' + coord + ' ===',
-      next_coord,
-      prev_coord,
-      sep='\n')
