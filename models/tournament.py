@@ -1,21 +1,34 @@
 from scraper import Scraper
+# from db import db_session, Column, Integer, String, Numeric
+from db import Base, Column, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+from custom_type import SetLike
+
+# Base = declarative_base()
 
 
-class Tournament(object):
+class Tournament(Base):
+    __tablename__ = 't_tournament'
+    site_sid = Column(String(100), primary_key=True)
+    name = Column(String(100), index=True)
+    events = relationship('Event',
+                          back_populates='tournament',
+                          cascade="all, delete-orphan")
+
     def __init__(self, site_sid):
         self.site_sid = str(site_sid)
         self.name = ''
-        self.events = set()
+        self.events = []#SetLike()  ### set()
 
     def add_event(self, event):
         if event not in self.events:
-            self.events.add(event)
+            self.events.append(event)###add
             event.set_tournament(self)
 
     # @classmethod
     def print_(self, until_class='Tournament'):
         print('Tournament "{}"'.format(str(self)))
-        # if not isinstance(self, until_class):
         if until_class != self.__class__.__name__:
             for event in self.events:
                 if event:
@@ -31,13 +44,24 @@ class Tournament(object):
         return hash(self.site_sid)
 
 
-# TODO check if staticmethod is working for a class (and __init__ should not exist in a static class...)
-# @staticmethod
 class Helper(object):
     # def __init__(self):
     # scraper = Scraper()
     tournaments = set()
     until_class = Tournament  # ??? keep it???
+
+    # @staticmethod
+    # def create_table():
+    #     with db_session() as session:
+    #         Base.metadata.create_all(session.bind)
+    #
+    # @staticmethod
+    # def save():
+    #     with db_session() as session:
+    #         # if create_table:
+    #         #     Base.metadata.create_all(session.bind)
+    #         for tournament in Helper.tournaments:
+    #             session.add(tournament)
 
     @staticmethod
     def scrape(site_sid):

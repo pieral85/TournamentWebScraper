@@ -1,7 +1,20 @@
 from scraper import Scraper
+# from db import db_session, Column, Integer, String, Numeric
+from db import Base, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
+
+# Base = declarative_base()
 
 
-class Event(object):
+class Event(Base):
+    __tablename__ = 't_event'
+    event_id = Column(Integer, primary_key=True)
+    name = Column(String(10), index=True)
+    tournament_id = Column(String(100), ForeignKey('t_tournament.site_sid'), nullable=False)
+    tournament = relationship('Tournament', back_populates='events')
+
     def __init__(self, tournament, site_sid, name):
         self.tournament = None
         self.site_sid = site_sid
@@ -41,6 +54,17 @@ class Event(object):
 class Helper(object):
     # scraper = Scraper()
     events = set()
+
+    # @staticmethod
+    # def create_table():
+    #     with db_session() as session:
+    #         Base.metadata.create_all(session.bind)
+    #
+    # @staticmethod
+    # def save():
+    #     with db_session() as session:
+    #         for event in Helper.events:
+    #             session.add(event)
 
     @staticmethod
     def scrape(tournament):

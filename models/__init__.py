@@ -9,4 +9,7 @@ from .entry import Entry, Helper as EntryHelper
 from .entry_position import EntryPosition
 from .match import Match
 
+# from db import db_session, Column, Integer, String, Numeric
+# from sqlalchemy.ext.declarative import declarative_base
+
 __all__ = ['draw']

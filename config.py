@@ -27,6 +27,7 @@ PATH_PREFIXES = {
 }
 
 # === database config ===
+DB_CREATE_TABLES = True
 DB_FILE_PATH = os.path.join(os.getcwd(), 'tournament.db')
 DB_USERNAME = 'admin'
 DB_PASSWORD = 'default'
