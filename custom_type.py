@@ -2,7 +2,7 @@ from sqlalchemy.orm.collections import collection
 
 
 class SetLike(object):
-    __emulates__ = set
+    __emulates__ = list # set
 
     def __init__(self):
         self.data = set()

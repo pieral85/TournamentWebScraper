@@ -19,7 +19,7 @@ class Tournament(Base):
     def __init__(self, site_sid):
         self.site_sid = str(site_sid)
         self.name = ''
-        self.events = []#SetLike()  ### set()
+        self.events = SetLike()  ### set()
 
     def add_event(self, event):
         if event not in self.events:

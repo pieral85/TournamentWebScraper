@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <segment>
+        <factor>0</factor>
+        <win>5</win>
+        <loss>-5</loss>
+    </segment>
+    <segment>
+        <factor>2</factor>
+        <win>7</win>
+        <loss>-3</loss>
+    </segment>
+    <segment>
+        <factor>1</factor>
+        <win>6</win>
+        <loss>-4</loss>
+    </segment>
+    <segment>
+        <factor>3</factor>
+        <win>8</win>
+        <loss>-2</loss>
+    </segment>
+    <segment>
+        <factor>4</factor>
+        <win>9</win>
+        <loss>-1</loss>
+    </segment>
+    <segment>
+        <factor>5</factor>
+        <win>10</win>
+        <loss>0</loss>
+    </segment>
+</root>

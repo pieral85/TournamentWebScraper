@@ -1,4 +1,17 @@
-class Club(object):
+from db import Base, Column, Integer, String, Boolean
+# from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
+# from custom_type import SetLike
+
+
+class Club(Base):
+    __tablename__ = 't_club'
+    club_id = Column(Integer, primary_key=True)
+    name = Column(String(50), index=True)
+    entries = relationship('Entry',
+                           back_populates='club',
+                           cascade='all, delete-orphan')
+
     def __init__(self, name):
         self.name = name
         # self.players = set()

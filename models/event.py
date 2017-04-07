@@ -4,6 +4,7 @@ from db import Base, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
+from custom_type import SetLike
 
 # Base = declarative_base()
 
@@ -12,14 +13,18 @@ class Event(Base):
     __tablename__ = 't_event'
     event_id = Column(Integer, primary_key=True)
     name = Column(String(10), index=True)
+    site_sid = Column(Integer)
     tournament_id = Column(String(100), ForeignKey('t_tournament.site_sid'), nullable=False)
     tournament = relationship('Tournament', back_populates='events')
+    draws = relationship('Draw',
+                         back_populates='event',
+                         cascade='all, delete-orphan')
 
     def __init__(self, tournament, site_sid, name):
         self.tournament = None
         self.site_sid = site_sid
         self.name = name
-        self.draws = set()
+        self.draws = SetLike()  # set()
         self.set_tournament(tournament)
 
     def set_tournament(self, tournament):
@@ -29,8 +34,14 @@ class Event(Base):
 
     def add_draw(self, draw):
         if draw not in self.draws:
-            self.draws.add(draw)
+            self.draws.append(draw)###add
             draw.set_event(self)
+
+    def get_draw(self, round):
+        for draw in self.draws:
+            if draw.round == round:
+                return draw
+        return None
 
     def print_(self, until_class='Event', offset=0):
         print('{0}Event "{1}"'.format(' '*offset, str(self)))
@@ -65,6 +76,16 @@ class Helper(object):
     #     with db_session() as session:
     #         for event in Helper.events:
     #             session.add(event)
+
+    @staticmethod
+    def calculate_factor(event):
+        draw_round= 0
+        for draw in event.draws:
+            if draw.round == draw_round:
+                for entry in draw.entries:
+                    for entryPosition in entry.entryPositions:
+                        entryPosition.get_entryPosition_previous_round()
+                        #entryPosition.match.
 
     @staticmethod
     def scrape(tournament):

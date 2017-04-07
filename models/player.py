@@ -1,9 +1,21 @@
 from scraper import Scraper
+from db import Base, Column, Integer, String, Boolean
+# from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
+# from custom_type import SetLike
 
 
-class Player(object):
-    def __init__(self, site_id, name_first='', name_last=''):
-        self.site_id = site_id
+class Player(Base):
+    __tablename__ = 't_player'
+    site_sid = Column(String(50), primary_key=True)
+    name_first = Column(String(30))
+    name_last = Column(String(30))
+    entries = relationship('Entry',
+                           back_populates='player',
+                           cascade='all, delete-orphan')
+
+    def __init__(self, site_sid, name_first='', name_last=''):
+        self.site_sid = site_sid
         self.name_first = name_first
         self.name_last = name_last
         # self.tournament_player_site_id = None  # TODO This parameter must be placed in the Entry class
@@ -20,13 +32,14 @@ class Player(object):
         #     pass
 
     def __str__(self):
-        return '{0} {1} (#{2})'.format(self.name_first, self.name_last, self.site_id)
+        return '{0} {1}'.format(self.name_first, self.name_last)
+        # return '{0} {1} (#{2})'.format(self.name_first, self.name_last, self.site_sid)
 
     def __eq__(self, other):
-        return self.site_id == other.site_id
+        return self.site_sid == other.site_sid
 
     def __hash__(self):
-        return hash(self.site_id)
+        return hash(self.site_sid)
 
 
 class Helper(object):

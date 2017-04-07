@@ -9,6 +9,8 @@ import models
 
 
 class RoundRobin(models.Draw):
+    __mapper_args__ = {'polymorphic_identity': 'round_robin'}
+
     def __init__(self):
         super(RoundRobin, self).__init__()
         # self.draw.round = 0

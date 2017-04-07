@@ -39,6 +39,9 @@ import models
 
 
 class Knockout(models.Draw):
+    __mapper_args__ = {'polymorphic_identity': 'knockout'}
+                       # 'inherit_condition': id == Employee.id}
+
     def __init__(self):
         super(Knockout, self).__init__()
         self.type_ = 'KO'
@@ -83,6 +86,10 @@ class Helper(object):
         for x, tag in enumerate(lTags):
             team_index = 0
             for y, td in enumerate(tag):
+                if knockout.event.name == 'SDB2' and y == 29 and x == x_club + 1:
+                    print("SDB2", x, y)
+                if knockout.event.name == 'SMC2' and (x == 5 and y == 9):  # if (x, y) in ((5, 8), (6, 8)):
+                    print("SMC2", x, y)
                 if x == 0:
                     if td.text.strip().isdigit():
                         dMapCoords[(x_club + 1, y)] = (0, int(td.text.strip()) - 1)
@@ -99,6 +106,7 @@ class Helper(object):
                 elif x > x_club:
                     if 'drawrulercell' in td.attrs.get('class', []):
                         # dMapCoords.setdefault((x - x_club - 1, team_index), (x, y))
+
                         dMapCoords.setdefault((x, y), (x - x_club - 1, team_index))
                         tournament_player_site_ids = Helper._get_tournament_player_site_ids(td)
                         # entryPosition = Helper.get_entryPosition(knockout, td.attr('class')[2])
@@ -114,6 +122,8 @@ class Helper(object):
                             # entries.append(self.get_player(Player(int(tag_a['href'].split('entry=')[1]))))
                             entry = models.DrawHelper.find_entry(knockout, tournament_player_site_id)
                             entries.append(entry)
+                            if knockout.event.name == 'SMC2' and entry.player.name_first == 'Alaime':
+                                print((x, y))
                         entryPosition.set_entry(*entries[:2])  # TODO Ensure that players contains 1 or 2 players MAX!
                         # knockout.add_entryPosition(entryPosition)
                         team_index += 1
@@ -121,6 +131,9 @@ class Helper(object):
                         coords_previous_round = Helper._get_coord_previous(*dMapCoords.get((x, y - 1)))
                         match = models.Match(knockout.get_entryPosition(*coords_previous_round[0]),
                                              knockout.get_entryPosition(*coords_previous_round[1]))
+                        if knockout.get_entryPosition(*coords_previous_round[0]) == \
+                                knockout.get_entryPosition(*coords_previous_round[1]):
+                            print(coords_previous_round)  # TODO This should never happen...
                         # match.entryPosition1 = knockout.get_entryPosition(*coords_previous_round[0])
                         # match.entryPosition2 = knockout.get_entryPosition(*coords_previous_round[1])
                         # noinspection PyPep8Naming
@@ -131,15 +144,20 @@ class Helper(object):
                         elif len(span.find_all('span')) >= 2:
                             match.add_result(*[score.text for score in span.find_all('span')],
                                              swap_result=entryPosition_winner == match.entryPosition2)
+                            if match and (match.result_set1 == (21, 18) or match.result_set1 == (18, 21)) and (
+                                    match.result_set2 == (26, 24) or match.result_set2 == (24, 26)):
+                                print(match.result_set1)
                         elif span.text.upper() == 'WALKOVER':
                             match.add_result('21-0', '21-0',
                                              swap_result=entryPosition_winner == match.entryPosition2)
                         else:
                             raise Exception('Unknown match result for following html tag: "{}"'.format(td.text))
 
+
                             # match.add_result(*[score.text for score in td.find('span', class_='score').find_all('span')],
                             #              swap_result=entryPosition_winner == match.entryPosition2)
                         # Helper.matchs.add(match)
+        knockout.remove_entryPositions_withouh_match()
         return knockout
 
     # noinspection PyShadowingBuiltins
