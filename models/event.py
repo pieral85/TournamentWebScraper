@@ -79,13 +79,13 @@ class Helper(object):
 
     @staticmethod
     def calculate_factor(event):
-        draw_round= 0
+        draw_round = 0
         for draw in event.draws:
             if draw.round == draw_round:
                 for entry in draw.entries:
-                    for entryPosition in entry.entryPositions:
-                        entryPosition.get_entryPosition_previous_round()
-                        #entryPosition.match.
+                    for teamPosition in entry.teamPositions:
+                        teamPosition.get_teamPosition_previous_round()
+                        #teamPosition.match.
 
     @staticmethod
     def scrape(tournament):

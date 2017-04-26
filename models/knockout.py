@@ -8,10 +8,10 @@ from scraper import Scraper
 # import models.draw
 
 # import models.draw
-# from .entry_position import EntryPosition
+# from .entry_position import TeamPosition
 # from .match import Match
 
-# from models import Draw, DrawHelper, EntryPosition, Match
+# from models import Draw, DrawHelper, TeamPosition, Match
 import models
 # from abc import ABCMeta, abstractmethod
 #
@@ -34,7 +34,7 @@ import models
     #     self.index = draw.index
     #     self.type_ = draw.type_
     #     self.qualifying = draw.qualifying
-    #     self.entryPositions = draw.entryPositions
+    #     self.teamPositions = draw.teamPositions
 # print(dir(models.draw))
 
 
@@ -84,7 +84,7 @@ class Helper(object):
         dMapCoords = {}
 
         for x, tag in enumerate(lTags):
-            team_index = 0
+            index_team = 0
             for y, td in enumerate(tag):
                 if knockout.event.name == 'SDB2' and y == 29 and x == x_club + 1:
                     print("SDB2", x, y)
@@ -97,67 +97,69 @@ class Helper(object):
                     club_names = list(td.stripped_strings)
                     if club_names:
                         tournament_player_site_ids = Helper._get_tournament_player_site_ids(lTags[x + 1][y])
-                        # Helper.manage_new_entry(td, lTags[x + 1][y], draw)
+                        # Helper.manage_new_team_and_entries(td, lTags[x + 1][y], draw)
                         # TODO replace td.attr('class')[2] with a re:
-                        models.DrawHelper.manage_new_entry(club_names,
+                        models.DrawHelper.manage_new_team_and_entries(club_names,
                                                            tournament_player_site_ids,
                                                            lTags[x + 1][y].attrs['class'][2],
                                                            knockout)
                 elif x > x_club:
                     if 'drawrulercell' in td.attrs.get('class', []):
-                        # dMapCoords.setdefault((x - x_club - 1, team_index), (x, y))
+                        # dMapCoords.setdefault((x - x_club - 1, index_team), (x, y))
 
-                        dMapCoords.setdefault((x, y), (x - x_club - 1, team_index))
-                        tournament_player_site_ids = Helper._get_tournament_player_site_ids(td)
-                        # entryPosition = Helper.get_entryPosition(knockout, td.attr('class')[2])
+                        dMapCoords.setdefault((x, y), (x - x_club - 1, index_team))
+                        # tournament_player_site_ids = Helper._get_tournament_player_site_ids(td)
+                        entry_site_drc_id = td.attrs['class'][2]  # lTags[x + 1][y].attrs['class'][2]
+                        # teamPosition = Helper.get_teamPosition(knockout, td.attr('class')[2])
                         # TODO replace td.attr('class')[2] with a re:
                         # noinspection PyPep8Naming
-                        entryPosition = models.EntryPosition(*dMapCoords[(x, y)])
-                        # entryPosition = EntryPosition(knockout, td.attr('class')[2])
-                        # entryPosition.round = dMapCoords[(x, y)][0]
-                        # entryPosition.index = dMapCoords[(x, y)][1]
-                        entries = []
-                        # for tag_a in td.find_all(Helper.is_player):
-                        for tournament_player_site_id in tournament_player_site_ids:
-                            # entries.append(self.get_player(Player(int(tag_a['href'].split('entry=')[1]))))
-                            entry = models.DrawHelper.find_entry(knockout, tournament_player_site_id)
-                            entries.append(entry)
-                            if knockout.event.name == 'SMC2' and entry.player.name_first == 'Alaime':
-                                print((x, y))
-                        entryPosition.set_entry(*entries[:2])  # TODO Ensure that players contains 1 or 2 players MAX!
-                        # knockout.add_entryPosition(entryPosition)
-                        team_index += 1
+                        teamPosition = models.TeamPosition(*dMapCoords[(x, y)])
+                        team = models.DrawHelper.find_team(knockout, entry_site_drc_id)
+
+                        # entries = []
+                        # # for tag_a in td.find_all(Helper.is_player):
+                        # for i_team, tournament_player_site_id in enumerate(tournament_player_site_ids):
+                        #     # entries.append(self.get_player(Player(int(tag_a['href'].split('entry=')[1]))))
+                        #     entry = models.DrawHelper.find_entry(knockout, tournament_player_site_id)
+                        #     entries.append(entry)
+                        #     if knockout.event.name == 'SMC2' and entry.player.name_first == 'Alaime':
+                        #         print((x, y))
+                        # teamPosition.set_entry(*entries[:2])  # TODO Ensure that players contains 1 or 2 players MAX!
+
+                        teamPosition.set_team(team)
+                        # knockout.add_teamPosition(teamPosition)
+                        index_team += 1
                     elif td.span and 'score' in td.span.get('class', []):
                         coords_previous_round = Helper._get_coord_previous(*dMapCoords.get((x, y - 1)))
-                        match = models.Match(knockout.get_entryPosition(*coords_previous_round[0]),
-                                             knockout.get_entryPosition(*coords_previous_round[1]))
-                        if knockout.get_entryPosition(*coords_previous_round[0]) == \
-                                knockout.get_entryPosition(*coords_previous_round[1]):
+                        match = models.Match(knockout.get_teamPosition(*coords_previous_round[0]),
+                                             knockout.get_teamPosition(*coords_previous_round[1]))
+                        if knockout.get_teamPosition(*coords_previous_round[0]) == \
+                                knockout.get_teamPosition(*coords_previous_round[1]):
                             print(coords_previous_round)  # TODO This should never happen...
-                        # match.entryPosition1 = knockout.get_entryPosition(*coords_previous_round[0])
-                        # match.entryPosition2 = knockout.get_entryPosition(*coords_previous_round[1])
+                        # match.teamPosition1 = knockout.get_teamPosition(*coords_previous_round[0])
+                        # match.teamPosition2 = knockout.get_teamPosition(*coords_previous_round[1])
                         # noinspection PyPep8Naming
-                        entryPosition_winner = knockout.get_entryPosition(*dMapCoords.get((x, y - 1)))
+                        teamPosition_winner = knockout.get_teamPosition(*dMapCoords.get((x, y - 1)))
                         span = td.find('span', class_='score')
                         if not span:
                             pass
                         elif len(span.find_all('span')) >= 2:
                             match.add_result(*[score.text for score in span.find_all('span')],
-                                             swap_result=entryPosition_winner == match.entryPosition2)
+                                             swap_result=teamPosition_winner == match.teamPosition2)
                             if match and (match.result_set1 == (21, 18) or match.result_set1 == (18, 21)) and (
                                     match.result_set2 == (26, 24) or match.result_set2 == (24, 26)):
                                 print(match.result_set1)
                         elif span.text.upper() == 'WALKOVER':
                             match.add_result('21-0', '21-0',
-                                             swap_result=entryPosition_winner == match.entryPosition2)
+                                             swap_result=teamPosition_winner == match.teamPosition2)
                         else:
                             raise Exception('Unknown match result for following html tag: "{}"'.format(td.text))
 
 
                             # match.add_result(*[score.text for score in td.find('span', class_='score').find_all('span')],
-                            #              swap_result=entryPosition_winner == match.entryPosition2)
+                            #              swap_result=teamPosition_winner == match.teamPosition2)
                         # Helper.matchs.add(match)
-        knockout.remove_entryPositions_withouh_match()
+        knockout.remove_teamPositions_withouh_match()
         return knockout
 
     # noinspection PyShadowingBuiltins

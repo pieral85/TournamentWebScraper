@@ -2,10 +2,10 @@ from scraper import Scraper
 
 # # from models.draw import Draw, Helper as DrawHelper
 # import models.draw as d
-# from models.entry_position import EntryPosition
+# from models.entry_position import TeamPosition
 # from models.match import Match
 import models
-# from models import draw as d, EntryPosition, Match
+# from models import draw as d, TeamPosition, Match
 
 
 class RoundRobin(models.Draw):
@@ -52,27 +52,27 @@ class Helper(object):
                 if x == x_club:
                     club_names = td.stripped_strings
                     tournament_player_site_ids = Helper._get_tournament_player_site_ids(lTags[x+1][y])
-                    team_entries = models.Helper.manage_new_entry(club_names,
-                                                               tournament_player_site_ids,
-                                                               None,
-                                                               roundRobin)
-                    entryPosition = models.EntryPosition(0, y)
-                    entryPosition.set_entry(*team_entries)
+                    # TODO: This part should be copied from the Knockout class ... team_entries = models.Helper.manage_new_team_and_entries(club_names,
+                    #                                               tournament_player_site_ids,
+                    #                                               None,
+                    #                                               roundRobin)
+                    teamPosition = models.TeamPosition(0, y)
+                    teamPosition.set_entry(*team_entries)
                 # elif x_club < x < x_firstTeam:
                 # if x > x_club:
                     # if 'entrycell' in td.attrs['class']:
                     #     tournament_player_site_ids = Helper._get_tournament_player_site_ids(td)
-                    #     entryPosition = EntryPosition(0, y)
+                    #     teamPosition = TeamPosition(0, y)
                     #     entries = []
                     #     for tournament_player_site_id in tournament_player_site_ids:
                     #         entry = DrawHelper.find_entry(roundRobin, tournament_player_site_id)
                     #         entries.append(entry)
-                    #     entryPosition.set_entry(*entries[:2])
+                    #     teamPosition.set_entry(*entries[:2])
                 elif x >= x_firstTeam and (x - x_firstTeam) > y:
                     # td.find('span', id='match').find('span').
                     if 'score' in td.span.attrs['class']:
-                        match = models.Match(roundRobin.get_entryPosition(0, y),
-                                      roundRobin.get_entryPosition(0, x - x_firstTeam))
+                        match = models.Match(roundRobin.get_teamPosition(0, y),
+                                      roundRobin.get_teamPosition(0, x - x_firstTeam))
                         match.add_result(*[score.text for score in td.find('span', class_='score').find_all('span')])
 
                     index_y = int(td.text)

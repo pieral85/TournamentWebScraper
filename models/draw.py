@@ -8,6 +8,8 @@ from custom_type import SetLike
 
 
 class Draw(Base):
+    temp = 0
+
     __tablename__ = 't_draw'
     draw_id = Column(Integer, primary_key=True)
     site_id = Column(Integer)
@@ -33,7 +35,7 @@ class Draw(Base):
         self.index = None
         self.type_ = ''  # TODO Add an enum with 'KO' and 'RR'
         self.qualifying = None
-        # self.entryPositions = set()
+        # self.teamPositions = set()
         self.entries = SetLike()  # set()
 
         # self.set_event(event)
@@ -49,33 +51,48 @@ class Draw(Base):
             entry.set_draw(self)
 
     # noinspection PyPep8Naming
-    def get_last_entryPosition(self, entry):
-        for ent in self.entries:
-            if ent.player == entry.player and ent.club == entry.club:
-                return entry.get_last_entryPosition()
-        return None
+    # def get_last_teamPosition(self, entry):
+    #     for ent in self.entries:
+    #         if ent.player == entry.player and ent.club == entry.club:
+    #             return entry.get_last_teamPosition()
+    #     return None
 
     # noinspection PyPep8Naming
-    def remove_entryPositions_withouh_match(self):
+    def remove_teamPositions_withouh_match(self):
         for entry in self.entries:
-            for entryPosition in entry.entryPositions:
-                if not entryPosition.match:
-                    # print('EntryPosition removed:', entryPosition)
-                    entry.entryPositions.remove(entryPosition)
+            for teamPosition in entry._teamPositions:
+                if not teamPosition.match:
+                    # print('TeamPosition removed:', teamPosition)
+                    Draw.temp += 1
+                    print("a", Draw.temp)
+                    entry.teamPositions.remove(teamPosition)
+            for teamPosition in entry._co_teamPositions:
+                if not teamPosition.match:
+                    # print('TeamPosition removed:', teamPosition)
+                    Draw.temp += 1
+                    print("b", Draw.temp)
+                    entry.teamPositions.remove(teamPosition)
+            # for teamPosition in entry.teamPositions:
+            #     if not teamPosition.match:
+            #         # print('TeamPosition removed:', teamPosition)
+            #         Draw.temp += 1
+            #         print(Draw.temp)
+            #         entry.teamPositions.remove(teamPosition)
 
     def test_abstract_method(self):
         raise NotImplementedError()
 
     # noinspection PyShadowingBuiltins,PyPep8Naming
-    def get_entryPosition(self, round, index):
-        # for entryPosition in self.entryPositions:
-        #     if entryPosition.round == round and entryPosition.index == index:
-        #         return entryPosition
+    def get_teamPosition(self, round, index):
+        # for teamPosition in self.teamPositions:
+        #     if teamPosition.round == round and teamPosition.index == index:
+        #         return teamPosition
         # return None
         for entry in self.entries:
-            for entryPosition in entry.entryPositions:
-                if entryPosition.round == round and entryPosition.index == index:
-                    return entryPosition
+            # for teamPosition in entry.teamPositions:
+            for teamPosition in entry.team.teamPositions:
+                if teamPosition.round == round and teamPosition.index == index:
+                    return teamPosition
 
     def print_(self, until_class='Draw', offset=0):
         print('{0}Draw "{1}"'.format(' ' * offset, str(self)))
@@ -109,6 +126,7 @@ class Helper(object):
     players = set()
     clubs = set()
     _entries = set()
+    _teams = set()
     # matchs = set()
 
 
@@ -167,14 +185,13 @@ class Helper(object):
 
     # noinspection PyPep8Naming
     @staticmethod
-    def manage_new_entry(team_clubNames, tournament_player_site_ids, entry_site_drc_id, draw):
-        #  TODO Move to draw.py?
+    def manage_new_team_and_entries(team_clubNames, tournament_player_site_ids, entry_site_drc_id, draw):
         # team_clubNames = tag_td_club.stripped_strings
         # entries_tag_a = tag_td_team.find_all(Helper.is_player)
         entries_ = []
         if len(team_clubNames) != len(tournament_player_site_ids) or len(team_clubNames) < 1 or len(team_clubNames) > 2:
             raise Exception()
-        for club_name, tournament_player_site_id in zip(team_clubNames, tournament_player_site_ids):
+        for i, (club_name, tournament_player_site_id) in enumerate(zip(team_clubNames, tournament_player_site_ids)):
             # add club in list of clubs
 
             player = models.PlayerHelper.add_player(draw.event.tournament, tournament_player_site_id)  # TODO: /!\ The ID given to Player constructor should not be related the tournament!!!
@@ -184,16 +201,24 @@ class Helper(object):
             # old way: club = self.get_club(Club(club_name))
             # club.add_player(player)
             # EntryHelper.add_entry(EntryHelper.add_entry(Entry(player, club, draw, entry_site_drc_id)))
-            entry = models.Entry(player, club, draw, entry_site_drc_id, tournament_player_site_id)
+            entry = models.Entry(player, club, draw, tournament_player_site_id)
             Helper._entries.add(models.EntryHelper.add_entry(entry))
             entries_.append(models.EntryHelper.add_entry(entry))
-        return entries_
+        Helper._teams.add(models.Team(entry_site_drc_id, *entries_))
+        # return entries_
+
+    # @staticmethod
+    # def find_entry(draw, tournament_player_site_id):
+    #     for entry in Helper._entries:
+    #         if entry.draw == draw and entry.tournament_player_site_id == tournament_player_site_id:
+    #             return entry
+    #     return None
 
     @staticmethod
-    def find_entry(draw, tournament_player_site_id):
-        for entry in Helper._entries:
-            if entry.draw == draw and entry.tournament_player_site_id == tournament_player_site_id:
-                return entry
+    def find_team(draw, entry_site_drc_id):
+        for team in Helper._teams:
+            if team.entry1.draw == draw and team.entry_site_drc_id == entry_site_drc_id:
+                return team
         return None
 
     @staticmethod

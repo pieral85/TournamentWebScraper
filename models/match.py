@@ -13,37 +13,39 @@ class Match(Base):
     s_result_set2 = Column('set2', String(5))
     s_result_set3 = Column('set3', String(5))
 
-    entryPosition1_id = Column(Integer, ForeignKey('t_entryPosition.entryPosition_id'), nullable=False, unique=True)
-    entryPosition1 = relationship('EntryPosition',
-                                  foreign_keys=[entryPosition1_id], back_populates='match1')
+    teamPosition1_id = Column(Integer, ForeignKey('t_teamPosition.teamPosition_id'), nullable=False, unique=True)
+    teamPosition1 = relationship('TeamPosition',
+                                  foreign_keys=[teamPosition1_id],
+                                  back_populates='_match1')
 
-    entryPosition2_id = Column(Integer,
-                               CheckConstraint('entryPosition1_id != entryPosition2_id',
-                                               name='single_entryPosition_constraint'),
-                               ForeignKey('t_entryPosition.entryPosition_id'),
+    teamPosition2_id = Column(Integer,
+                               CheckConstraint('teamPosition1_id != teamPosition2_id',
+                                               name='single_teamPosition_constraint'),
+                               ForeignKey('t_teamPosition.teamPosition_id'),
                                nullable=False,
                                unique=True)
-    entryPosition2 = relationship('EntryPosition',
-                                  foreign_keys=[entryPosition2_id], back_populates='match2')
-    # entryPosition1_id = Column(Integer, ForeignKey('t_entryPosition.entryPosition_id'), nullable=False)
-    # entryPosition1 = relationship('EntryPosition',
-    #                               foreign_keys=[entryPosition1_id],
+    teamPosition2 = relationship('TeamPosition',
+                                  foreign_keys=[teamPosition2_id],
+                                  back_populates='_match2')
+    # teamPosition1_id = Column(Integer, ForeignKey('t_teamPosition.teamPosition_id'), nullable=False)
+    # teamPosition1 = relationship('TeamPosition',
+    #                               foreign_keys=[teamPosition1_id],
     #                               back_populates='match')
     #
-    # entryPosition2_id = Column(Integer, ForeignKey('t_entryPosition.entryPosition_id'), nullable=False)
-    # entryPosition2 = relationship('EntryPosition',
-    #                               foreign_keys=[entryPosition2_id],
+    # teamPosition2_id = Column(Integer, ForeignKey('t_teamPosition.teamPosition_id'), nullable=False)
+    # teamPosition2 = relationship('TeamPosition',
+    #                               foreign_keys=[teamPosition2_id],
     #                               back_populates='match')
 
 
     # noinspection PyPep8Naming
-    def __init__(self, entryPosition1, entryPosition2):
-        self.entryPosition1 = None
-        self.entryPosition2 = None
+    def __init__(self, teamPosition1, teamPosition2):
+        self.teamPosition1 = None
+        self.teamPosition2 = None
         # self._result_set1 = None
         # self.result_set2 = None
         # self.result_set3 = None
-        self.set_entryPosition(entryPosition1, entryPosition2)
+        self.set_teamPosition(teamPosition1, teamPosition2)
 
     # @validates('_s_result_set1')
     # def update_set1(self, key, value):
@@ -65,17 +67,17 @@ class Match(Base):
         return '-'.join([str(score) for score in result]) if result else ''
 
     # noinspection PyPep8Naming
-    def set_entryPosition(self, entryPosition1=None, entryPosition2=None):
-        if entryPosition1 and self.entryPosition1 != entryPosition1:
-            if entryPosition1 == entryPosition2:
-                print(entryPosition1)
-            self.entryPosition1 = entryPosition1
-            self.entryPosition1.set_match(self, 1)
-        if entryPosition2 and self.entryPosition2 != entryPosition2:
-            if entryPosition1 == entryPosition2:
-                print(entryPosition2)
-            self.entryPosition2 = entryPosition2
-            self.entryPosition2.set_match(self, 2)
+    def set_teamPosition(self, teamPosition1=None, teamPosition2=None):
+        if teamPosition1 and self.teamPosition1 != teamPosition1:
+            if teamPosition1 == teamPosition2:
+                print(teamPosition1)
+            self.teamPosition1 = teamPosition1
+            self.teamPosition1.set_match(self, 1)
+        if teamPosition2 and self.teamPosition2 != teamPosition2:
+            if teamPosition1 == teamPosition2:
+                print(teamPosition2)
+            self.teamPosition2 = teamPosition2
+            self.teamPosition2.set_match(self, 2)
 
     @property
     def result_set1(self):
@@ -91,7 +93,7 @@ class Match(Base):
 
     @property
     def factor(self):
-        return self.entryPosition1.factor + self.entryPosition2.factor
+        return self.teamPosition1.factor + self.teamPosition2.factor
 
     # @result_set1.setter
     # def result_set1(self, value):
@@ -106,13 +108,13 @@ class Match(Base):
         self.s_result_set1 = s_result_set1  # Match._getStrResult(self.result_set1)
         self.s_result_set2 = s_result_set2  # Match._getStrResult(self.result_set2)
         self.s_result_set3 = s_result_set3  # Match._getStrResult(self.result_set3)
-        self.entryPosition1.isWinner = not swap_result
-        self.entryPosition2.isWinner = swap_result
+        self.teamPosition1.isWinner = not swap_result
+        self.teamPosition2.isWinner = swap_result
 
     # noinspection PyPep8Naming
     def get_winner_entryPositon(self):
         sets_summary = self._get_match_sets_summary()
-        return self.entryPosition1 if max(sets_summary) == sets_summary[0] else self.entryPosition2
+        return self.teamPosition1 if max(sets_summary) == sets_summary[0] else self.teamPosition2
 
     @staticmethod
     def _check_match_result(match_result):
@@ -177,14 +179,14 @@ class Match(Base):
             pass
 
     def __str__(self):
-        return '{0}   VS.   {1}: {2}'.format(str(self.entryPosition1),
-                                             str(self.entryPosition2),
+        return '{0}   VS.   {1}: {2}'.format(str(self.teamPosition1),
+                                             str(self.teamPosition2),
                                              self.print_result())
 
     def __eq__(self, other):
-        return self.entryPosition1 == other.entryPosition1 and \
-               self.entryPosition2 == other.entryPosition2
+        return self.teamPosition1 == other.teamPosition1 and \
+               self.teamPosition2 == other.teamPosition2
 
     def __hash__(self):
-        return hash('{0}|{1}'.format(self.entryPosition1.__hash__(),
-                                     self.entryPosition2.__hash__()))
+        return hash('{0}|{1}'.format(self.teamPosition1.__hash__(),
+                                     self.teamPosition2.__hash__()))

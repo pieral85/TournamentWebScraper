@@ -4,7 +4,7 @@
 # TODO Manage multiple langages within config.py (surtout for html tags/values/...)
 
 from models import TournamentHelper, PlayerHelper, EventHelper, DrawHelper, \
-    Player, Tournament, Event, Draw, Entry, EntryPosition, Match
+    Player, Tournament, Event, Draw, Entry, TeamPosition, Match
 from config import DB_FILE_PATH, DB_CREATE_TABLES
 from db import Base, session, engine, IntegrityError, select, join, Table, mapper
 from sqlalchemy import or_
@@ -61,13 +61,13 @@ class TournamentScraper(object):
         # session.query(Match).join(EntryPosition, or_(EntryPosition==Match.entryPosition1)).\
         # matchs = session.query(Match).join(Match.entryPosition1).\
         # join(EntryPosition.entry). \
-        matchs = session.query(Match).join(EntryPosition, or_(Match.entryPosition1_id==EntryPosition.entryPosition_id, Match.entryPosition2_id==EntryPosition.entryPosition_id)).\
-            join(Entry, or_(EntryPosition.entry_id==Entry.entry_id, EntryPosition.co_entry_id==Entry.entry_id)).\
+        matchs = session.query(Match).join(TeamPosition, or_(Match.entryPosition1_id == TeamPosition.entryPosition_id, Match.entryPosition2_id == TeamPosition.entryPosition_id)).\
+            join(Entry, or_(TeamPosition.entry_id == Entry.entry_id, TeamPosition.co_entry_id == Entry.entry_id)).\
             join(Entry.player).\
             join(Entry.club).join(Entry.draw).\
             join(Draw.event).join(Event.tournament).\
             filter(Player.name_first == 'Reinquin').\
-            order_by(Player.site_sid, Event.event_id, Draw.round, EntryPosition.round).all()#.join(Match)#.filter(Player.name_first == 'Alaime').first()
+            order_by(Player.site_sid, Event.event_id, Draw.round, TeamPosition.round).all()#.join(Match)#.filter(Player.name_first == 'Alaime').first()
 
         for match in matchs:
             print(match, match.point_assignment)
@@ -76,13 +76,13 @@ class TournamentScraper(object):
         #     order_by(Player.site_sid, Event.event_id, Draw.round, EntryPosition.round).all()
         players = session.query(Player).all()
         for player in players:
-            entryPositions = session.query(EntryPosition). \
-                join(Entry, or_(EntryPosition.entry_id==Entry.entry_id, EntryPosition.co_entry_id==Entry.entry_id)). \
+            entryPositions = session.query(TeamPosition). \
+                join(Entry, or_(TeamPosition.entry_id == Entry.entry_id, TeamPosition.co_entry_id == Entry.entry_id)). \
                 join(Entry.player). \
                 join(Entry.club).join(Entry.draw). \
                 join(Draw.event).join(Event.tournament). \
                 filter(Player == player). \
-                order_by(Player.site_sid, Event.event_id, Draw.round, EntryPosition.round).all()
+                order_by(Player.site_sid, Event.event_id, Draw.round, TeamPosition.round).all()
 
             factor = 0
             for entryPosition in entryPositions:
