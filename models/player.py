@@ -13,11 +13,13 @@ class Player(Base):
     entries = relationship('Entry',
                            back_populates='player',
                            cascade='all, delete-orphan')
+    _points = 0
 
     def __init__(self, site_sid, name_first='', name_last=''):
         self.site_sid = site_sid
         self.name_first = name_first
         self.name_last = name_last
+        self._points = 0
         # self.tournament_player_site_id = None  # TODO This parameter must be placed in the Entry class
         # self.club = None
 
@@ -25,6 +27,14 @@ class Player(Base):
     #     if self.club is not club:
     #         self.club = club
     #         club.add_player(self)
+
+    @property
+    def points(self):
+        return self._points
+
+    @points.setter
+    def points(self, value):
+        self._points = value
 
     def print_(self, until_class='Player', offset=0):
         print(' '*offset + str(self))

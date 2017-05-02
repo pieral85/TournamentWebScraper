@@ -101,3 +101,5 @@ ENV/
 /venv/
 .idea/workspace.xml
 data/
+/check_points.csv
+/test/

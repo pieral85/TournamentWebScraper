@@ -22,9 +22,12 @@ class Draw(Base):
     event = relationship('Event', back_populates='draws')
     discriminator = Column('type', String(50))
     __mapper_args__ = {'polymorphic_on': discriminator}
-    entries = relationship('Entry',
-                           back_populates='draw',
-                           cascade='all, delete-orphan')
+    # entries = relationship('Entry',
+    #                        back_populates='draw',
+    #                        cascade='all, delete-orphan')
+    teams = relationship('Team',
+                         back_populates='draw',
+                         cascade='all, delete-orphan')
 
     def __init__(self):  # , event , name):
         # TODO include site_sid and modify __eq__ and __hash__ with it
@@ -36,7 +39,7 @@ class Draw(Base):
         self.type_ = ''  # TODO Add an enum with 'KO' and 'RR'
         self.qualifying = None
         # self.teamPositions = set()
-        self.entries = SetLike()  # set()
+        self.teams = SetLike()  # self.entries = SetLike()
 
         # self.set_event(event)
 
@@ -45,10 +48,14 @@ class Draw(Base):
             self.event = event
             self.event.add_draw(self)
 
-    def add_entry(self, entry):
-        if entry not in self.entries:
-            self.entries.append(entry)###add
-            entry.set_draw(self)
+    # def add_entry(self, entry):
+    #     if entry not in self.entries:
+    #         self.entries.append(entry)
+    #         entry.set_draw(self)
+    def add_team(self, team):
+        if team not in self.teams:
+            self.teams.append(team)  # TODO self.teams.ADD instead???
+            team.set_draw(self)
 
     # noinspection PyPep8Naming
     # def get_last_teamPosition(self, entry):
@@ -59,25 +66,23 @@ class Draw(Base):
 
     # noinspection PyPep8Naming
     def remove_teamPositions_withouh_match(self):
-        for entry in self.entries:
-            for teamPosition in entry._teamPositions:
+        for team in self.teams:
+            for teamPosition in team.teamPositions:
                 if not teamPosition.match:
-                    # print('TeamPosition removed:', teamPosition)
-                    Draw.temp += 1
-                    print("a", Draw.temp)
-                    entry.teamPositions.remove(teamPosition)
-            for teamPosition in entry._co_teamPositions:
-                if not teamPosition.match:
-                    # print('TeamPosition removed:', teamPosition)
-                    Draw.temp += 1
-                    print("b", Draw.temp)
-                    entry.teamPositions.remove(teamPosition)
-            # for teamPosition in entry.teamPositions:
-            #     if not teamPosition.match:
-            #         # print('TeamPosition removed:', teamPosition)
-            #         Draw.temp += 1
-            #         print(Draw.temp)
-            #         entry.teamPositions.remove(teamPosition)
+                    team.teamPositions.remove(teamPosition)
+        # for entry in self.entries:
+        #     for teamPosition in entry._teamPositions:
+        #         if not teamPosition.match:
+        #             # print('TeamPosition removed:', teamPosition)
+        #             Draw.temp += 1
+        #             print("a", Draw.temp)
+        #             entry.teamPositions.remove(teamPosition)
+        #     for teamPosition in entry._co_teamPositions:
+        #         if not teamPosition.match:
+        #             # print('TeamPosition removed:', teamPosition)
+        #             Draw.temp += 1
+        #             print("b", Draw.temp)
+        #             entry.teamPositions.remove(teamPosition)
 
     def test_abstract_method(self):
         raise NotImplementedError()
@@ -88,9 +93,15 @@ class Draw(Base):
         #     if teamPosition.round == round and teamPosition.index == index:
         #         return teamPosition
         # return None
-        for entry in self.entries:
-            # for teamPosition in entry.teamPositions:
-            for teamPosition in entry.team.teamPositions:
+
+        # for entry in self.entries:
+        #     # for teamPosition in entry.teamPositions:
+        #     for teamPosition in entry.team.teamPositions:
+        #         if teamPosition.round == round and teamPosition.index == index:
+        #             return teamPosition
+
+        for team in self.teams:
+            for teamPosition in team.teamPositions:
                 if teamPosition.round == round and teamPosition.index == index:
                     return teamPosition
 
@@ -125,7 +136,7 @@ class Helper(object):
     # Following attributes should be return by the caller to do an update:
     players = set()
     clubs = set()
-    _entries = set()
+    # _entries = set()
     _teams = set()
     # matchs = set()
 
@@ -188,9 +199,10 @@ class Helper(object):
     def manage_new_team_and_entries(team_clubNames, tournament_player_site_ids, entry_site_drc_id, draw):
         # team_clubNames = tag_td_club.stripped_strings
         # entries_tag_a = tag_td_team.find_all(Helper.is_player)
-        entries_ = []
+        # entries_ = []
         if len(team_clubNames) != len(tournament_player_site_ids) or len(team_clubNames) < 1 or len(team_clubNames) > 2:
             raise Exception()
+        team = models.Team(entry_site_drc_id, draw)
         for i, (club_name, tournament_player_site_id) in enumerate(zip(team_clubNames, tournament_player_site_ids)):
             # add club in list of clubs
 
@@ -201,11 +213,12 @@ class Helper(object):
             # old way: club = self.get_club(Club(club_name))
             # club.add_player(player)
             # EntryHelper.add_entry(EntryHelper.add_entry(Entry(player, club, draw, entry_site_drc_id)))
-            entry = models.Entry(player, club, draw, tournament_player_site_id)
-            Helper._entries.add(models.EntryHelper.add_entry(entry))
-            entries_.append(models.EntryHelper.add_entry(entry))
-        Helper._teams.add(models.Team(entry_site_drc_id, *entries_))
-        # return entries_
+            entry = models.Entry(player, club, team, i + 1, tournament_player_site_id)
+            # Helper._entries.add(models.EntryHelper.add_entry(entry))
+            models.EntryHelper.add_entry(entry)  # entries_.append(models.EntryHelper.add_entry(entry))
+        Helper._teams.add(team)
+        models.TeamHelper.add_team(team)
+            # return entries_
 
     # @staticmethod
     # def find_entry(draw, tournament_player_site_id):
@@ -217,7 +230,7 @@ class Helper(object):
     @staticmethod
     def find_team(draw, entry_site_drc_id):
         for team in Helper._teams:
-            if team.entry1.draw == draw and team.entry_site_drc_id == entry_site_drc_id:
+            if team.draw == draw and team.entry_site_drc_id == entry_site_drc_id:
                 return team
         return None
 

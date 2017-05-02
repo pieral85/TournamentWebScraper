@@ -6,14 +6,14 @@
         <loss>-5</loss>
     </segment>
     <segment>
-        <factor>2</factor>
-        <win>7</win>
-        <loss>-3</loss>
-    </segment>
-    <segment>
         <factor>1</factor>
         <win>6</win>
         <loss>-4</loss>
+    </segment>
+    <segment>
+        <factor>2</factor>
+        <win>7</win>
+        <loss>-3</loss>
     </segment>
     <segment>
         <factor>3</factor>

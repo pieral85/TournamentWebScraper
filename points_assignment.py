@@ -1,6 +1,7 @@
 from xml.etree import ElementTree
 
 _pointsAssignment = {}  # set()
+_factorMax = 0
 
 
 class PointAssignment:
@@ -26,10 +27,12 @@ class PointAssignment:
 
 # noinspection PyPep8Naming
 def getPointsAssignment():
+    global _factorMax
     if not _pointsAssignment:
         tree = ElementTree.parse('points_mapping.xml')
         for segment in tree.getroot().findall('segment'):
             factor = int(segment.find('factor').text)
+            _factorMax = max(factor, _factorMax)
             _pointsAssignment[factor] = PointAssignment(
                 factor,
                 segment.find('win').text,
@@ -38,9 +41,22 @@ def getPointsAssignment():
     return _pointsAssignment
 
 
+# noinspection PyPep8Naming
+def getPoint(factor):
+    if factor in _pointsAssignment:
+        return getPointsAssignment()[factor]
+    else:
+        point = getPointsAssignment()[_factorMax]
+        return PointAssignment(factor, point.win, point.loss)
+    # return getPointsAssignment().get(factor,
+    #                                  getPointsAssignment()[_factorMax])
+
+
 if __name__ == '__main__':
     points = getPointsAssignment()
     for factor, point in points.items():
         print(factor, ':', str(point))
     for point in getPointsAssignment().values():
         print(point.win, '<-->', point.loss)
+    for factor in range(10):
+        print(getPoint(factor))

@@ -17,18 +17,18 @@ class Entry(Base):
     club_id = Column(Integer, ForeignKey('t_club.club_id'))
     club = relationship('Club', back_populates='entries')
 
-    draw_id = Column(Integer, ForeignKey('t_draw.draw_id'))
-    draw = relationship('Draw', back_populates='entries')
+    # draw_id = Column(Integer, ForeignKey('t_draw.draw_id'))
+    # draw = relationship('Draw', back_populates='entries')
 
     #    teamPositions = relationship('TeamPosition',
     #                                  primaryjoin=or_(models.TeamPosition.entry_id == entry_id,
     #                                                  models.TeamPosition.co_entry_id == entry_id))
 
-    team_index = Column(Integer)
-    team1 = relationship('Team',
+    _team_index = Column(Integer)
+    _team1 = relationship('Team',
                          primaryjoin=models.Team.entry1_id == entry_id,
                          uselist=False)
-    team2 = relationship('Team',
+    _team2 = relationship('Team',
                          primaryjoin=models.Team.entry2_id == entry_id,
                          uselist=False)
 
@@ -42,18 +42,17 @@ class Entry(Base):
     #                                  cascade='all, delete-orphan',
     #                                  foreign_keys=['co_entry_id'])
 
-    # def __init__(self, player, club, draw, entry_site_drc_id, tournament_player_site_id):
-    def __init__(self, player, club, draw, tournament_player_site_id):
-        self.draw = None
+    def __init__(self, player, club, team, team_index, tournament_player_site_id):
+        # self.draw = None
         self.team = None
         self.player = player
         self.club = club
         # self.entry_site_drc_id = entry_site_drc_id
         self.tournament_player_site_id = tournament_player_site_id
-        self.team_index = None
+        self._team_index = None
         # self.teamPositions = SetLike()
         # self.co_teamPositions = SetLike() ###
-        self.set_draw(draw)  # self.draw = draw
+        self.set_team(team, team_index)  # self.set_draw(draw)
 
 
     # self.tournaments = {}
@@ -65,34 +64,34 @@ class Entry(Base):
     #     return self.tournaments[tournament]
 
     def set_team(self, team, team_index):
-        self.team_index = team_index
-        if self.team and self.team != team:
+        self._team_index = team_index
+        if self.team != team:  # if self.team and self.team != team:
             self.team = team
             self.team.set_entry(self if team_index == 1 else None,
                                 self if team_index == 2 else None)
 
     @property
     def team(self):
-        if self.team_index == 1:
-            return self.team1
-        elif self.team_index == 2:
-            return self.team2
+        if self._team_index == 1:
+            return self._team1
+        elif self._team_index == 2:
+            return self._team2
 
     @team.setter
     def team(self, value):
-        if self.team_index == 1:
-            self.team1 = value
-        elif self.team_index == 2:
-            self.team1 = value
+        if self._team_index == 1:
+            self._team1 = value
+        elif self._team_index == 2:
+            self._team2 = value
         else:
             return None
-            raise Exception('self.team_index should be 1 or 2 (currently: {})'.
-                            format(self.team_index))
+            raise Exception('self._team_index should be 1 or 2 (currently: {})'.
+                            format(self._team_index))
 
-    def set_draw(self, draw):
-        if draw is not self.draw:  # TODO Use != instead of 'is not'?
-            self.draw = draw
-            self.draw.add_entry(self)
+    # def set_draw(self, draw):
+    #     if draw is not self.draw:  # TODO Use != instead of 'is not'?
+    #         self.draw = draw
+    #         self.draw.add_entry(self)
 
     # noinspection PyPep8Naming
     # def add_teamPosition(self, teamPosition, is_co_entry=False):
@@ -131,12 +130,12 @@ class Entry(Base):
             return False  # print(str(self))
         return self.player == other.player and \
                self.club == other.club and \
-               self.draw == other.draw
+               self.team == other.team
 
     def __hash__(self):
         return hash('{0}|{1}|{2}'.format(self.player.__hash__(),
                                          self.club.__hash__(),
-                                         self.draw.__hash__()))
+                                         self.team.__hash__()))
 
 
 class Helper(object):
@@ -148,7 +147,8 @@ class Helper(object):
         #     if e == entry:
         #         return e
         Helper.entries.add(entry)
-        return entry
+        # return entry
+
         # if entry not in self.players:
         #     self.players.append(entry)
 

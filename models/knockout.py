@@ -139,19 +139,22 @@ class Helper(object):
                         # match.teamPosition1 = knockout.get_teamPosition(*coords_previous_round[0])
                         # match.teamPosition2 = knockout.get_teamPosition(*coords_previous_round[1])
                         # noinspection PyPep8Naming
-                        teamPosition_winner = knockout.get_teamPosition(*dMapCoords.get((x, y - 1)))
+                        team_winner = knockout.get_teamPosition(*dMapCoords.get((x, y - 1))).team  # teamPosition_winner = knockout.get_teamPosition(*dMapCoords.get((x, y - 1)))
                         span = td.find('span', class_='score')
                         if not span:
                             pass
                         elif len(span.find_all('span')) >= 2:
+                            if match.teamPosition1.team.draw.name == "SMC2" and match.teamPosition1.round == 1 and \
+                                                    0 <= match.teamPosition1.index <= 3:
+                                print('2017-05-02', str(match.teamPosition1), str(team_winner), str(match.teamPosition2.team), team_winner == match.teamPosition2.team)
                             match.add_result(*[score.text for score in span.find_all('span')],
-                                             swap_result=teamPosition_winner == match.teamPosition2)
+                                             swap_result=team_winner == match.teamPosition2.team)
                             if match and (match.result_set1 == (21, 18) or match.result_set1 == (18, 21)) and (
                                     match.result_set2 == (26, 24) or match.result_set2 == (24, 26)):
                                 print(match.result_set1)
                         elif span.text.upper() == 'WALKOVER':
                             match.add_result('21-0', '21-0',
-                                             swap_result=teamPosition_winner == match.teamPosition2)
+                                             swap_result=team_winner == match.teamPosition2.team)
                         else:
                             raise Exception('Unknown match result for following html tag: "{}"'.format(td.text))
 

@@ -11,15 +11,25 @@ class Club(Base):
     entries = relationship('Entry',
                            back_populates='club',
                            cascade='all, delete-orphan')
+    _points = 0
 
     def __init__(self, name):
         self.name = name
+        self._points = 0
         # self.players = set()
 
     # def add_player(self, player):
     #     if player not in self.players:
     #         self.players.add(player)
     #         player.add_club(self)
+
+    @property
+    def points(self):
+        return self._points
+
+    @points.setter
+    def points(self, value):
+        self._points = value
 
     def __str__(self):
         return '{}'.format(self.name)

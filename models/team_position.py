@@ -3,8 +3,9 @@ import models
 from db import Base, Column, Integer, String, Boolean
 from sqlalchemy import ForeignKey, or_, CheckConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from custom_type import SetLike
-from points_assignment import PointAssignment, getPointsAssignment
+from points_assignment import getPoint
 
 
 class TeamPosition(Base):
@@ -38,6 +39,7 @@ class TeamPosition(Base):
     _match2 = relationship('Match',
                           primaryjoin=models.Match.teamPosition2_id == teamPosition_id,
                           uselist=False)
+
     # match3 = or_(match, _match2)
 
     # match = relationship('Match',
@@ -45,7 +47,7 @@ class TeamPosition(Base):
     #                                      models.Match.teamPosition2_id == teamPosition_id),
     #                      uselist=False)
     # TODO Check all cascade="all, delete-orphan" of all relationships
-    pointsAssignement = getPointsAssignment()
+    # pointsAssignement = getPointsAssignment()
 
     # noinspection PyShadowingBuiltins
     def __init__(self, round, index):  # , entry, co_entry=None):
@@ -62,6 +64,21 @@ class TeamPosition(Base):
         self.match_index = None
         # self.match = None
         # self.set_team(entry, co_entry)
+
+    # noinspection PyPep8Naming
+    @property
+    def teamPosition_oponent(self):
+        """
+
+        :return: TeamPosition
+        """
+        if self.match_index == 1:
+            return self.match.teamPosition2
+        elif self.match_index == 2:
+            return self.match.teamPosition1
+        else:
+            raise Exception('self.match_index should be 1 or 2 (currently: {})'.
+                            format(self.match_index))
 
     @property
     def match(self):
@@ -97,9 +114,23 @@ class TeamPosition(Base):
             self.match.set_teamPosition(self if match_index == 1 else None,
                                          self if match_index == 2 else None)
 
-    @property
-    def pointAsignement(self):
-        return TeamPosition.pointsAssignement[self.match.factor]
+    # noinspection PyPep8Naming
+    # @property
+    @hybrid_property
+    def getPoints(self):
+        pointAssignement = getPoint(self.match.factor)
+        if self.isWinner:
+            return pointAssignement.win
+        else:
+            return pointAssignement.loss
+
+    # @getPoints.expression
+    # def getPoints(cls):
+    #     pointAssignement = getPoint(cls.match.factor)
+    #     if cls.isWinner:
+    #         return pointAssignement.win
+    #     else:
+    #         return pointAssignement.loss
 
 
     # # noinspection PyPep8Naming
@@ -136,18 +167,14 @@ class TeamPosition(Base):
                 self.match.print_(until_class, offset+1)
 
     def __str__(self):
-        if self.co_entry:
-            return '{0} & {1} (round {2}, index {3})'.\
-                format(str(self.team), str(self.co_entry), self.round, self.index)
-        else:
-            return '{0} (round {1}, index {2})'.\
+        return '{0} (round {1}, index {2})'.\
                 format(str(self.team), self.round, self.index)
 
     def __eq__(self, other):
         if not other:
             return self is None
         elif not self.team or self.round is None or self.index is None:
-            raise Exception('Either entry ({0}), round ({1}) or index ({2}) has not been defined in '
+            raise Exception('Either team ({0}), round ({1}) or index ({2}) has not been defined in '
                             'TeamPosition instance {3}.'
                             .format(str(self.team), str(self.round), str(self.index), str(self)))
         return self.team == other.team and self.round == other.round and self.index == other.index

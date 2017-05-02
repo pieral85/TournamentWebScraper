@@ -1,7 +1,7 @@
 from db import Base, Column, Integer, String, Boolean
 from sqlalchemy import ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship, validates,  column_property, synonym
-import points_assignment as pa
+# import points_assignment as pa
 from sqlalchemy.ext.hybrid import hybrid_property
 from custom_type import SetLike
 
@@ -91,7 +91,7 @@ class Match(Base):
     def result_set3(self):
         return Match._convert_result(self.s_result_set3, False)
 
-    @property
+    @hybrid_property  # @property
     def factor(self):
         return self.teamPosition1.factor + self.teamPosition2.factor
 
