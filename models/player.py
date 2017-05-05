@@ -96,6 +96,6 @@ class Helper(object):
         #         return player
         player = Helper.players_in_tournament.get((tournament, tournament_player_site_id), None)
         if not player:
-            raise Exception('Not able to get player {0} in tournament {1]'
+            raise Exception('Not able to get player {0} in tournament {1}'
                             .format(tournament_player_site_id, tournament))
         return player

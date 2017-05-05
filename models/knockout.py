@@ -152,7 +152,7 @@ class Helper(object):
                             if match and (match.result_set1 == (21, 18) or match.result_set1 == (18, 21)) and (
                                     match.result_set2 == (26, 24) or match.result_set2 == (24, 26)):
                                 print(match.result_set1)
-                        elif span.text.upper() == 'WALKOVER':
+                        elif span.text.upper() in ('WALKOVER', 'PAS DE RENCONTRE'):
                             match.add_result('21-0', '21-0',
                                              swap_result=team_winner == match.teamPosition2.team)
                         else:

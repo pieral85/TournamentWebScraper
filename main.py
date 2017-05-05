@@ -76,6 +76,7 @@ class TournamentScraper(object):
         # events = session.query(Event).\
         #     order_by(Player.site_sid, Event.event_id, Draw.round, EntryPosition.round).all()
 
+    # noinspection PyPep8Naming
     def attributeFactors(self):
         players = session.query(Player).all()
         for player in players:
@@ -86,11 +87,16 @@ class TournamentScraper(object):
                 join(Entry.club).join(Team.draw). \
                 join(Draw.event).join(Event.tournament). \
                 filter(Player == player). \
-                order_by(Player.site_sid, Event.event_id, Draw.round, TeamPosition.round).all()
+                order_by(Player.site_sid, Event.event_id, Draw.round, Team.entry_site_drc_id, TeamPosition.round).all()
 
-            factor = 0
+            # factor = 0
+            event = None
             for teamPosition in teamPositions:
                 # print(teamPosition)
+                if not event or event != teamPosition.team.draw.event:
+                    event = teamPosition.team.draw.event
+                    factor = 0
+
                 if teamPosition.match:
                     teamPosition.factor = factor
                     factor += 1
@@ -199,12 +205,15 @@ class TournamentScraper(object):
 
 
 if __name__ == '__main__':
-    # tournamentScraper = TournamentScraper('D5D2E3E4-1C1C-4CD1-9661-1C6D8FDD3731')  # Bertrix 2017
+
         # Club id: http://lfbb.tournamentsoftware.com/default.aspx?id=2&cb=55127840-BDE8-4FF4-94C9-E5393A176E16
-    tournamentScraper = TournamentScraper('9E9A83F7-77CE-4B60-B0BA-F5041F45DE19')  # Namur 2016
+    # tournamentScraper = TournamentScraper('9E9A83F7-77CE-4B60-B0BA-F5041F45DE19')  # Namur 2016
+    # tournamentScraper = TournamentScraper('E99FE69B-FF95-4757-B259-EE70B8614A56')  # Marche 2014
+    # tournamentScraper = TournamentScraper('D5D2E3E4-1C1C-4CD1-9661-1C6D8FDD3731')  # Bertrix 2017
+    tournamentScraper = TournamentScraper('31D4F091-9929-44C4-816B-1F474C1E35CD')  # Bertrix 2014-08
     # TODO Try with a list/tupl/set of site_ids
         # Club id: http://lfbb.tournamentsoftware.com/default.aspx?id=2&cb=C43F3CA1-811C-44EE-B218-4C6AE8A2173D
-    choices = [0, 2]
+    choices = [0, 1, 2]
     if 0 in choices:
         tournamentScraper.scrape()
     if 1 in choices:

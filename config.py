@@ -20,7 +20,7 @@ PATH_ROOT = os.path.join(os.getcwd(), 'data', 'files')
 _FOLDER_TOURNAMENT_ID = '___'
 PATH_PREFIXES = {
     'Tournament': ('tournaments', _FOLDER_TOURNAMENT_ID),
-    'Player': ('players',),
+    'Player': ('tournaments', _FOLDER_TOURNAMENT_ID, 'players'),
     'Event': ('tournaments', _FOLDER_TOURNAMENT_ID, 'events'),
     'Draw': ('tournaments', _FOLDER_TOURNAMENT_ID, 'events', 'draws'),
     'EntryPosition': ('tournaments', _FOLDER_TOURNAMENT_ID, 'events', 'draws', 'entryPositions')

@@ -158,6 +158,7 @@ class Helper(object):
         if x_draw is None or x_type is None or x_qualify is None:
             raise Exception('Header not matching while trying to extract draws.')
 
+        index_draw = 0
         for y, tr in enumerate(table.tbody.find_all('tr')):
             # lTags.append([])
             # draw = Draw()
@@ -184,9 +185,12 @@ class Helper(object):
                     if qualify == 'OUI':
                         draw_child.qualifying = True  # TODO Is this attribute useful?
                         draw_child.round = 0
+                        draw_child.index = index_draw
+                        index_draw += 1
                     elif qualify == 'NON':
                         draw_child.qualifying = False
                         draw_child.round = 1  # TODO Should manage special cases (see https://lfbb.tournamentsoftware.com/sport/event.aspx?id=82B349B5-F02F-4CC9-A93F-51AB3E83016A&event=3)
+                        draw_child.index = 0
                     else:
                         raise Exception('Unknown qualification while trying to exctract draws.')
             draw_child.set_event(event)
