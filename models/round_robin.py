@@ -68,17 +68,44 @@ class Helper(object):
                     #         entry = DrawHelper.find_entry(roundRobin, tournament_player_site_id)
                     #         entries.append(entry)
                     #     teamPosition.set_entry(*entries[:2])
-                elif x >= x_firstTeam: # and (x - x_firstTeam) > y:
-                    # td.find('span', id='match').find('span').
-                    teamPosition = models.TeamPosition(0, x - x_firstTeam)
-                    team = models.DrawHelper.find_team(roundRobin, lTags[x_club + 1][y].get('id'))
-                    teamPosition.set_team(team)
-                    if (x - x_firstTeam) > y and td.find('span', class_='score'):
-                        match = models.Match(roundRobin.get_teamPosition(0, y),
-                                             roundRobin.get_teamPosition(0, x - x_firstTeam))
-                        match.add_result(*[score.text for score in td.find('span', class_='score').find_all('span')])
 
-                    # index_y = int(td.text)
+                # elif x == x_club + 1:
+                #     # TODO Delete this entire block?
+                #     teamPosition = models.TeamPosition(0, y)  # TODO Not sure 'y' is working fine!
+                #     team = models.DrawHelper.find_team(roundRobin, lTags[x][y].get('id'))
+                #     teamPosition.set_team(team)
+
+                elif x >= x_firstTeam and x - x_firstTeam != y: # and (x - x_firstTeam) > y:
+                    entry_site_drc_id = lTags[x_club + 1][y].get('id')
+                    team = models.DrawHelper.find_team(roundRobin, entry_site_drc_id)
+                    teamPosition = models.TeamPosition(x - x_firstTeam, y)
+                    teamPosition.set_team(team)
+                    if (x - x_firstTeam) > y and td.find('span', class_='score'): #TODO delete '(x - x_firstTeam) > y' part
+                        match = models.Match(roundRobin.get_teamPosition(x - x_firstTeam, y),
+                                             roundRobin.get_teamPosition(y, x - x_firstTeam))
+                        # match = models.Match(roundRobin.get_teamPosition(0, y, entry_site_drc_id),
+                        #                      roundRobin.get_teamPosition(0, x - x_firstTeam, entry_site_drc_id))
+                        if match.teamPosition1.team.draw.name == 'SDA':
+                            print(str(match.teamPosition1.team), str(match.teamPosition2.team), sep='+++')
+                        span = td.find('span', class_='score')
+                        if not span:    # TODO This part should be merged with the one in Knockout
+                            pass
+                        elif len(span.find_all('span')) >= 2:
+                            match.add_result(*[score.text for score in span.find_all('span')],
+                                             swap_result=False)
+                        elif span.text.upper() in ('WALKOVER', 'PAS DE RENCONTRE'):
+                            status = [st.upper().strip() for st in td.find_all(text=True)]
+                            if 'GAGNÉ' in status:
+                                team1won = True
+                            elif 'PERDU' in status:
+                                team1won = False
+                            else:
+                                raise Exception  # TODO
+                            match.add_result('21-0', '21-0', swap_result=not team1won)
+                        else:
+                            raise Exception('Unknown match result for following html tag: "{}"'.format(td.text))
+
+                            # index_y = int(td.text)
                     # elif x == 1:
                     #     index_ys[y] =
 # class_='entrycell'

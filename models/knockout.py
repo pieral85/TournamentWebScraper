@@ -99,10 +99,11 @@ class Helper(object):
                         tournament_player_site_ids = Helper._get_tournament_player_site_ids(lTags[x + 1][y])
                         # Helper.manage_new_team_and_entries(td, lTags[x + 1][y], draw)
                         # TODO replace td.attr('class')[2] with a re:
-                        models.DrawHelper.manage_new_team_and_entries(club_names,
-                                                           tournament_player_site_ids,
-                                                           lTags[x + 1][y].attrs['class'][2],
-                                                           knockout)
+                        models.DrawHelper.manage_new_team_and_entries(
+                            club_names,
+                            tournament_player_site_ids,
+                            lTags[x + 1][y].attrs['class'][2],
+                            knockout)
                 elif x > x_club:
                     if 'drawrulercell' in td.attrs.get('class', []):
                         # dMapCoords.setdefault((x - x_club - 1, index_team), (x, y))

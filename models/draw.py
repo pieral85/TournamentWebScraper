@@ -88,7 +88,7 @@ class Draw(Base):
         raise NotImplementedError()
 
     # noinspection PyShadowingBuiltins,PyPep8Naming
-    def get_teamPosition(self, round, index):
+    def get_teamPosition(self, round, index):#, entry_site_drc_id=None):
         # for teamPosition in self.teamPositions:
         #     if teamPosition.round == round and teamPosition.index == index:
         #         return teamPosition
@@ -101,9 +101,11 @@ class Draw(Base):
         #             return teamPosition
 
         for team in self.teams:
+            # if not entry_site_drc_id or entry_site_drc_id == team.entry_site_drc_id:
             for teamPosition in team.teamPositions:
                 if teamPosition.round == round and teamPosition.index == index:
                     return teamPosition
+        return None
 
     def print_(self, until_class='Draw', offset=0):
         print('{0}Draw "{1}"'.format(' ' * offset, str(self)))

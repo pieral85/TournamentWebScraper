@@ -99,7 +99,7 @@ class TournamentScraper(object):
 
                 if teamPosition.match:
                     teamPosition.factor = factor
-                    factor += 1
+                    factor += 1  # TODO Cannot be incremented for RR!!!
                 else:
                     print("merde!!!")
                     # for event in events:

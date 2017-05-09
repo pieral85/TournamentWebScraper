@@ -69,13 +69,16 @@ class Match(Base):
     # noinspection PyPep8Naming
     def set_teamPosition(self, teamPosition1=None, teamPosition2=None):
         if teamPosition1 and self.teamPosition1 != teamPosition1:
-            if teamPosition1 == teamPosition2:
-                print(teamPosition1)
-            self.teamPosition1 = teamPosition1
-            self.teamPosition1.set_match(self, 1)
+            # if teamPosition1 == teamPosition2:
+            #     print(teamPosition1)
+            try:
+                self.teamPosition1 = teamPosition1
+                self.teamPosition1.set_match(self, 1)
+            except:
+                print(str(self.teamPosition1), str(self.teamPosition2), sep=' *** ')
         if teamPosition2 and self.teamPosition2 != teamPosition2:
-            if teamPosition1 == teamPosition2:
-                print(teamPosition2)
+            # if teamPosition1 == teamPosition2:
+            #     print(teamPosition2)
             self.teamPosition2 = teamPosition2
             self.teamPosition2.set_match(self, 2)
 
@@ -184,8 +187,13 @@ class Match(Base):
                                              self.print_result())
 
     def __eq__(self, other):
+        # try:
+        if not other:
+            return self is None
         return self.teamPosition1 == other.teamPosition1 and \
                self.teamPosition2 == other.teamPosition2
+        # except:
+        #     print('zut')
 
     def __hash__(self):
         return hash('{0}|{1}'.format(self.teamPosition1.__hash__(),
